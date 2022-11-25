@@ -18,8 +18,7 @@ class Word:
 			post_id = row.iloc[1]
 			msg  = row.iloc[2]
 			writer = row.iloc[3]
-			reader = row.iloc[4]
-			date = row.iloc[5]
+			date = row.iloc[4]
 			words = msg.split()
 			#filter signs
 			for word in words:

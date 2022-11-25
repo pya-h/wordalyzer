@@ -1,12 +1,25 @@
 import pandas as pd
-from models.test import testme
 from views.dashboard import Dashboard
+import models.manage as model_manager
+import webbrowser
+from threading import Thread, Timer
+from termcolor import cprint
+import colorama
 
-#testme()
+if __name__ == '__main__':
 
-data = pd.read_csv('models/avocado.csv')
-data = data.query('type == "conventional" and region == "Albany"')
+    # for initializing colored printing (cprint) in python
+    colorama.init()
 
-_ = Dashboard(data, "Date", "AveragePrice", graph_title = "Number of #")
-_.show()
-# localhost:8050
+    # localhost:8050
+    def open_browser():
+        webbrowser.open("http://127.0.0.1:8050", new=0, autoraise=True)
+        cprint("Dash server is now running... open http://127.0.0.1:8050 \n \t or http://localhost:8050 to access your dashboard.", "red")
+
+    Timer(1.0, open_browser).start()
+    # model_manager.testme()
+
+    data = model_manager.load_excel()
+    _ = Dashboard(data, "Date", "AveragePrice", graph_title = "Number of #")
+    _thread = Thread(target=_.run)
+    _thread.run()

@@ -49,5 +49,5 @@ class Dashboard:
                 )
 
     # now run the server
-    def show(self, debug=True):
+    def run(self, debug=True):
         self.dashboard.run_server(debug=debug)
