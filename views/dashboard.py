@@ -3,54 +3,51 @@ import dash_core_components as dcc
 import dash_html_components as html
 import pandas as pd
 
-# preprocess data
-data = pd.read_csv('models/avocado.csv')
-data = data.query('type == "conventional" and region == "Albany"' )
-print(data)
-data["Date"] = pd.to_datetime(data['Date'], format="%Y-%m-%d")
-data.sort_values("Date", inplace=True)
+class Dashboard:
+    def __init__(self, dataset, x_axis, y_axis, graph_title="", graph_type="bar") -> None:
 
-# init dash
-dashboard = dash.Dash(__name__)
+        # preprocess data
+        self.dataset = dataset
+        if not x_axis in dataset or not y_axis in dataset:
+            raise Exception("Axis field names that you provided are wrong field names; at least one of them doesnt exist in the dataset")
+        if x_axis.lower() == "date":
+            self.dataset[x_axis] = pd.to_datetime(self.dataset[x_axis], format="%Y-%m-%d")
+            self.dataset.sort_values(x_axis, inplace=True)
 
-# design the html layout
-dashboard.layout = html.Div( className="container",
+        # init dash
+        self.dashboard = dash.Dash(__name__)
+
+        # design the html layout
+        self.dashboard.layout = self.create_layout(self.dataset[x_axis], self.dataset[y_axis], graph_title, graph_type)
+
+
+    def create_layout(self, x, y, title, type='bar'):
+        return html.Div(
+                    className="container",
+                    children=[
+                        html.Div(
+                            className="title",
                             children=[
-                                html.Div(
-                                    className="title",
-                                    children=[
-                                        html.H1(children="Words Statistics"),
-                                        html.P(children="Here we count all the hashtags that are used among the comments of post viewers:"),
-                                    ]
-                                ),
-                                html.Hr(className="separator"),
-                                dcc.Graph(
-                                    figure={
-                                        "data": [
-                                            {
-                                                "x": data["Date"],
-                                                "y": data["AveragePrice"],
-                                                "type": "bar",
-                                            },
-                                        ],
-                                        "layout": {"title": "Number of Hashtags"},
+                                html.H1(children="Words Statistics"),
+                                html.P(children="Here we count all the hashtags that are used among the comments of post viewers:"),
+                            ]
+                        ),
+                        html.Hr(className="separator"),
+                        dcc.Graph(
+                            figure={
+                                "data": [
+                                    {
+                                        "x": x,
+                                        "y": y,
+                                        "type": type,
                                     },
-                                ),
-                                    # dcc.Graph(
-                                    #     figure={
-                                    #         "data": [
-                                    #             {
-                                    #                 "x": data["Date"],
-                                    #                 "y": data["Total Volume"],
-                                    #                 "type": "lines",
-                                    #             }
-                                    #         ],
-                                    #         "layout": {"title": "Number of whatever"}
-                                    #     },
-                                    # )
-                                ]
-                    )
+                                ],
+                                "layout": {"title": title},
+                            },
+                        ),
+                    ]
+                )
 
-# now run the server
-if __name__ == "__main__":
-    dashboard.run_server(debug=True)
+    # now run the server
+    def show(self, debug=True):
+        self.dashboard.run_server(debug=debug)
