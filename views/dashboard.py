@@ -4,21 +4,15 @@ import dash_html_components as html
 import pandas as pd
 
 class Dashboard:
-    def __init__(self, dataset, x_axis, y_axis, graph_title="", graph_type="bar") -> None:
+    def __init__(self, dataset, graph_title="", graph_type="bar") -> None:
 
         # preprocess data
         self.dataset = dataset
-        if not x_axis in dataset or not y_axis in dataset:
-            raise Exception("Axis field names that you provided are wrong field names; at least one of them doesnt exist in the dataset")
-        if x_axis.lower() == "date":
-            self.dataset[x_axis] = pd.to_datetime(self.dataset[x_axis], format="%Y-%m-%d")
-            self.dataset.sort_values(x_axis, inplace=True)
-
         # init dash
         self.dashboard = dash.Dash(__name__)
 
         # design the html layout
-        self.dashboard.layout = self.create_layout(self.dataset[x_axis], self.dataset[y_axis], graph_title, graph_type)
+        self.dashboard.layout = self.create_layout(list(self.dataset.keys()), list(self.dataset.values()), graph_title, graph_type)
 
 
     def create_layout(self, x, y, title, type='bar'):

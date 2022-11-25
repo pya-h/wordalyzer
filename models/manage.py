@@ -1,4 +1,11 @@
 import pandas as pd
+import sqlite3
+from .word import Word
+import re
+
+
+(DATASET_FILENAME, TABLE_COMMENTS, TABLE_POSTS, COL_TEXT, COL_ID, COL_POST_ID, COL_OWNER, COL_DATE, COL_LIKES, COL_LOCATION ) \
+    = ('models/dataset.db', 'comments', 'posts', 'text', 'id', 'post_id', 'owner', 'date', 'likes', 'location',)
 
 def load_excel(filename='models/avocado.csv'):
     data = pd.read_csv(filename)
@@ -6,8 +13,47 @@ def load_excel(filename='models/avocado.csv'):
     return data
 
 
-def testme():
-    data = pd.read_csv('models/avocado.csv')
-    print(data)
-    for row in data:
-        print(row)
+def dict_factory(cursor, row):
+    dict_result = {}
+    for index, column in enumerate(cursor.description):
+        dict_result[column[0]] = row[index]
+    return dict_result
+
+
+def db_loadall():
+    # load all tables
+     connection = sqlite3.connect(DATASET_FILENAME)
+     connection.row_factory = dict_factory
+     cursor = connection.cursor()
+     cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+     for table in cursor.fetchall():
+        yield list(cursor.execute('SELECT * from ?;', (table[0],)))
+
+
+def db_load(table_name = TABLE_COMMENTS, queries=[]):
+    connection = sqlite3.connect(DATASET_FILENAME)
+    connection.row_factory = dict_factory
+    cursor = connection.cursor()
+
+    return list(cursor.execute(f"SELECT * FROM {table_name}"))
+
+
+def extract_words(dataset):
+    for row in dataset:
+        id = row[COL_ID]
+        text = row[COL_TEXT]
+        post_id = row[COL_POST_ID]
+        owner  = row[COL_OWNER]
+        date = row[COL_DATE]
+        likes = row[COL_LIKES]
+        location = row[COL_LOCATION]
+        # split words, delimiter: any non alphabetic character except #
+        words = re.split("[^a-zA-Z#]", text)
+        # remove reduncdants:
+        words = filter(lambda s: s, words)
+
+        print(words)
+        #filter signs
+        for word in words:
+            Word(id, post_id, word, owner, date, likes, location)
+        # Word.S will be automatically loaded with words
