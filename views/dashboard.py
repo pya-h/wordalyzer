@@ -12,7 +12,15 @@ class Dashboard:
         self.dashboard = dash.Dash(__name__)
 
         # design the html layout
-        self.dashboard.layout = self.create_layout(list(self.dataset.keys()), list(self.dataset.values()), graph_title, graph_type)
+        x, y = self.extract_dataset()
+
+        self.dashboard.layout = self.create_layout(x, y, graph_title, graph_type)
+
+
+    def extract_dataset(self):
+        if type(self.dataset) is dict:
+            return (list(self.dataset.keys()), list(self.dataset.values()))
+        return self.dataset
 
 
     def create_layout(self, x, y, title, type='bar'):

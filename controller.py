@@ -15,8 +15,7 @@ if __name__ == '__main__':
 
     dataset = model_manager.db_load()
     model_manager.extract_words(dataset)
-    statistics = Word.count()
-    print(statistics.keys(), statistics.values())
+    statistics = Word.most_used(limit=10)
     # localhost:8050
     def open_browser():
         webbrowser.open("http://127.0.0.1:8050", new=0, autoraise=True)

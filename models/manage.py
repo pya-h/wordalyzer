@@ -57,3 +57,5 @@ def extract_words(dataset):
         for word in words:
             Word(id, post_id, word, owner, date, likes, location)
         # Word.S will be automatically loaded with words
+
+
