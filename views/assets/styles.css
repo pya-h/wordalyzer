@@ -55,3 +55,28 @@
         box-shadow: 10px 10px 10px 10px darkorange;
     }
 }
+
+.table-words {
+    border-collapse: collapse;
+    text-align: left;
+    width: 75%;
+    margin-top: 2rem;
+
+    margin-bottom: 1rem;
+    margin: auto;
+    max-width: 100%;
+    text-align: center;
+    background-color: transparent;
+}
+
+.table-words th,
+.table-words td {
+    padding: 0.75rem;
+    vertical-align: top;
+    border-top: 1px solid #dee2e6;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.table-words th {
+    background-color: gray;
+}

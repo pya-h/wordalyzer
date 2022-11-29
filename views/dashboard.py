@@ -47,6 +47,17 @@ class Dashboard:
                                 "layout": {"title": title},
                             },
                         ),
+                        html.Hr(className="separator"),
+                        html.Table(className="table-words", children=[
+                            html.Thead(
+                                html.Tr(children=[html.Th("Word"), html.Th("Iterations")]),
+                            ),
+                            html.Tbody(
+                                [
+                                    html.Tr(children=[html.Td("test here"), html.Td("4575")])
+                                ]
+                            )
+                        ])
                     ]
                 )
 

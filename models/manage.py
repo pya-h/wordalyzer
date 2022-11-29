@@ -52,7 +52,6 @@ def extract_words(dataset):
         # remove reduncdants:
         words = filter(lambda s: s, words)
 
-        print(words)
         #filter signs
         for word in words:
             Word(id, post_id, word, owner, date, likes, location)
