@@ -10,6 +10,16 @@ def find_max(collection):
 
 	return (max_idx, max_value)
 
+def date_sort(lst):
+	lst_length = len(lst)
+	for i in range(lst_length):
+		for j in range(i + 1, lst_length):
+			if lst[j].date < lst[i].date:
+				temp = lst[j]
+				lst[j] = lst[i]
+				lst[i] = temp
+	return lst
+
 class Word:
 	S = []
 	def __init__(self, id, post_id, word, owner, date, likes=None, location=None):
@@ -50,7 +60,7 @@ class Word:
 
 		if not temp:
 			return word_stats
-		i, limit_floor = find_max(temp)
+
 		words = list(filter(lambda idx: idx in filtered_keys, word_stats))
 		return (words, list(map(lambda word: word_stats[word], words)))
 
@@ -61,6 +71,13 @@ class Word:
 
 	def sort_stats(self, statistics):
 		return sorted(statistics.items(), key = lambda kv: (kv[1], kv[0]))
-#	sorted_dict = {dictionary_keys[i]: sorted(
-#    dict.values())[i] for i in range(len(dictionary_keys))}
 
+	@staticmethod
+	def timeline(word):
+		# find specific word's timeline
+		sames = list(filter(lambda w: w._.lower() == f'#{word}'.lower(), Word.S))
+		sames = date_sort(sames)
+		tl = {}
+		for sw in sames:
+			tl[sw.date] = tl[sw.date] + 1 if sw.date in tl else 1
+		return tl

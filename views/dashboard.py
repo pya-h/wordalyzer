@@ -2,31 +2,35 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import pandas as pd
+from models.word import Word
+from dash.dependencies import Input, Output
 
 class Dashboard:
-    def __init__(self, dataset, graph_title="", graph_type="bar") -> None:
+    def __init__(self, graph_title="", graph_type="bar") -> None:
 
         # preprocess data
-        self.dataset = dataset
         # init dash
         self.dashboard = dash.Dash(__name__)
 
         # design the html layout
-        self.x, self.y = self.extract_dataset()
+        x, y = self.extract_dataset(0)
 
-        self.dashboard.layout = self.create_layout(self.x, self.y, graph_title, graph_type)
+        self.dashboard.layout = self.create_layout(x, y)
 
+        self.add_events(graph_title, graph_type)
 
-    def extract_dataset(self):
+    def extract_dataset(self, limit):
+        self.dataset = Word.most_used(limit=int(limit))
         if type(self.dataset) is dict:
             return (list(self.dataset.keys()), list(self.dataset.values()))
         return self.dataset
 
 
-    def create_layout(self, x, y, title, type='bar'):
+    def create_layout(self, x, y):
         tbody = []
-        for i in range(len(self.x)):
-            tbody.append(html.Tr(children=[html.Td(html.A(href=self.x[i], children=self.x[i])), html.Td(self.y[i])]))
+        for i in range(len(x)):
+            tbody.append(html.Tr(children=[html.Td(html.A(href=x[i], children=x[i])), html.Td(y[i])]))
+
         return html.Div(
                     className="container",
                     children=[
@@ -38,18 +42,19 @@ class Dashboard:
                             ]
                         ),
                         html.Hr(className="separator"),
-                        dcc.Graph(
-                            figure={
-                                "data": [
-                                    {
-                                        "x": x,
-                                        "y": y,
-                                        "type": type,
-                                    },
-                                ],
-                                "layout": {"title": title},
-                            },
+                        html.Div(
+                            children=[
+                                html.Div(children="Limit", className="limit-drop-down"),
+                                dcc.Dropdown(
+                                    id="limit-filter",
+                                    options=[5, 10, 15, 20, 25, 30, 35, 40, 45, 50],
+                                    value="10",
+                                    clearable=False,
+                                    className="limit-drop-down"
+                                ),
+                            ]
                         ),
+                        dcc.Graph(id="words-chart"),
                         html.Hr(className="separator"),
                         html.Table(className="table-words", children=[
                             html.Thead(
@@ -59,6 +64,24 @@ class Dashboard:
                         ])
                     ]
                 )
+
+    def add_events(self, graph_title, graph_type):
+        @self.dashboard.callback(
+            [Output("words-chart", "figure")],
+            [Input("limit-filter", "value")]
+        )
+        def update_chart(limit):
+            x, y = self.extract_dataset(limit)
+            return {
+                "data": [
+                    {
+                        "x": x,
+                        "y": y,
+                        "type": graph_type,
+                    },
+                ],
+                "layout": {"title": graph_title},
+            },
 
     # now run the server
     def run(self, debug=True):
