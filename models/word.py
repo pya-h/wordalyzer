@@ -73,9 +73,9 @@ class Word:
 		return sorted(statistics.items(), key = lambda kv: (kv[1], kv[0]))
 
 	@staticmethod
-	def timeline(word):
+	def timeline(word, mark = '#'):
 		# find specific word's timeline
-		sames = list(filter(lambda w: w._.lower() == f'#{word}'.lower(), Word.S))
+		sames = list(filter(lambda w: w._.lower() == f'{mark}{word}'.lower(), Word.S))
 		sames = date_sort(sames)
 		tl = {}
 		for sw in sames:
