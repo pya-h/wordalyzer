@@ -86,3 +86,19 @@
     margin: auto;
     margin-bottom: 1rem;
 }
+
+.word-button {
+    padding: 1rem;
+    width: 200px;
+    font-size: 15px;
+    font-weight: bolder;
+    border-radius: 15px;
+    word-wrap: break-word;
+    background-color: lightgrey;
+    cursor: pointer;
+}
+
+.word-button:hover {
+    background-color: coral;
+    box-shadow: 10px 0 50px black;
+}

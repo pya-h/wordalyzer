@@ -24,6 +24,6 @@ if __name__ == '__main__':
     Timer(1.0, open_browser).start()
     # model_manager.testme()
 
-    _ = Dashboard(graph_title = "Number of #")
+    _ = Dashboard(graph_words_title = "Number of #")
     _thread = Thread(target=_.run)
     _thread.run()

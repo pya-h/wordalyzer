@@ -7,7 +7,7 @@ from dash.dependencies import Input, Output, State
 from shared import find_diffrenet
 
 class Dashboard:
-    def __init__(self, graph_title="", graph_type="bar") -> None:
+    def __init__(self, graph_words_title="", graph_words_type="bar", graph_timeline_type="line") -> None:
 
         # preprocess data
         # init dash
@@ -18,7 +18,8 @@ class Dashboard:
 
         self.dashboard.layout = self.create_layout(x, y)
 
-        self.auto_update_on_limit_change(graph_title, graph_type)
+        self.handle_limit_change_event(graph_words_title, graph_words_type)
+        self.handle_timeline_word_select_event(x, y, graph_timeline_type)
 
     def extract_dataset(self, limit):
         self.dataset = Word.most_used(limit=int(limit))
@@ -31,22 +32,8 @@ class Dashboard:
         tbody = []
         self.clicked_state = [0 for i in range(len(x))]
         for i in range(len(x)):
-            tbody.append(html.Tr(children=[html.Td(html.Button(x[i], id=f"btn_{x[i]}", n_clicks=0)), html.Td(y[i])]))
-            #add call back for btn_word_{i}
-        @self.dashboard.callback(
-            Output("div_result", "children"),
-            [Input(f"btn_{x[i]}", "n_clicks") for i in range(len(x))],
+            tbody.append(html.Tr(children=[html.Td(html.Button(x[i], id=f"btn_{x[i]}", n_clicks=0, className="word-button")), html.Td(y[i])]))
 
-        )
-        def change_word_timeline(*clicks):
-            result = ""
-            for i, click in enumerate(clicks):
-                if click and self.clicked_state[i] != clicks[i]:
-                    result = x[i]
-            # update previous to current
-            for i, click in enumerate(clicks):
-                self.clicked_state[i] = clicks[i]
-            return result
 
         return html.Div(
                     className="container",
@@ -79,11 +66,21 @@ class Dashboard:
                             ),
                             html.Tbody(tbody)
                         ]),
-                        html.Div(id="div_result", children="test")
+                        dcc.Graph(id="timeline-chart", figure={
+                                "data": [
+                                    {
+                                        "x": [],
+                                        "y": [],
+                                        "type": "line",
+                                    },
+                                ],
+                                "layout": {"title": ""},
+                            },
+                        ),
                     ]
                 )
 
-    def auto_update_on_limit_change(self, graph_title, graph_type):
+    def handle_limit_change_event(self, graph_words_title, graph_words_type):
         @self.dashboard.callback(
             [Output("words-chart", "figure")],
             [Input("limit-filter", "value")]
@@ -95,11 +92,46 @@ class Dashboard:
                     {
                         "x": x,
                         "y": y,
-                        "type": graph_type,
+                        "type": graph_words_type,
                     },
                 ],
-                "layout": {"title": graph_title},
+                "layout": {"title": graph_words_title},
             },
+
+    def handle_timeline_word_select_event(self, x, y, graph_timeline_type):
+        @self.dashboard.callback(
+            [Output("timeline-chart", "figure")],
+            [Input(f"btn_{x[i]}", "n_clicks") for i in range(len(x))],
+
+        )
+        def change_word_timeline(*clicks):
+            for i, click in enumerate(clicks):
+                if click and self.clicked_state[i] != clicks[i]:
+                    self.clicked_state[i] = clicks[i]
+                    dataset = Word.timeline(x[i])
+
+                    return {
+                        "data": [
+                            {
+                                "x": list(dataset.keys()),
+                                "y": list(dataset.values()),
+                                "type": graph_timeline_type,
+
+                            }
+                        ],
+                        "layout": {"title": f"{x[i]}'s timeline"}
+                    },
+
+            return {
+                        "data": [
+                            {
+                                "x": [],
+                                "y": [],
+                                "type": "line",
+                            },
+                        ],
+                        "layout": {"title": ""},
+                    },
 
     # now run the server
     def run(self, debug=True):
