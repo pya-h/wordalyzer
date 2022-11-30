@@ -3,7 +3,8 @@ import dash_core_components as dcc
 import dash_html_components as html
 import pandas as pd
 from models.word import Word
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
+from shared import find_diffrenet
 
 class Dashboard:
     def __init__(self, graph_title="", graph_type="bar") -> None:
@@ -17,7 +18,7 @@ class Dashboard:
 
         self.dashboard.layout = self.create_layout(x, y)
 
-        self.add_events(graph_title, graph_type)
+        self.auto_update_on_limit_change(graph_title, graph_type)
 
     def extract_dataset(self, limit):
         self.dataset = Word.most_used(limit=int(limit))
@@ -28,8 +29,24 @@ class Dashboard:
 
     def create_layout(self, x, y):
         tbody = []
+        self.clicked_state = [0 for i in range(len(x))]
         for i in range(len(x)):
-            tbody.append(html.Tr(children=[html.Td(html.A(href=x[i], children=x[i])), html.Td(y[i])]))
+            tbody.append(html.Tr(children=[html.Td(html.Button(x[i], id=f"btn_{x[i]}", n_clicks=0)), html.Td(y[i])]))
+            #add call back for btn_word_{i}
+        @self.dashboard.callback(
+            Output("div_result", "children"),
+            [Input(f"btn_{x[i]}", "n_clicks") for i in range(len(x))],
+
+        )
+        def change_word_timeline(*clicks):
+            result = ""
+            for i, click in enumerate(clicks):
+                if click and self.clicked_state[i] != clicks[i]:
+                    result = x[i]
+            # update previous to current
+            for i, click in enumerate(clicks):
+                self.clicked_state[i] = clicks[i]
+            return result
 
         return html.Div(
                     className="container",
@@ -61,11 +78,12 @@ class Dashboard:
                                 html.Tr(children=[html.Th("Word"), html.Th("Iterations")]),
                             ),
                             html.Tbody(tbody)
-                        ])
+                        ]),
+                        html.Div(id="div_result", children="test")
                     ]
                 )
 
-    def add_events(self, graph_title, graph_type):
+    def auto_update_on_limit_change(self, graph_title, graph_type):
         @self.dashboard.callback(
             [Output("words-chart", "figure")],
             [Input("limit-filter", "value")]

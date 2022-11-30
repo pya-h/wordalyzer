@@ -1,14 +1,4 @@
-def find_max(collection):
-	if not collection:
-		return (None, None)
-	max_idx = list(collection.keys())[0] if type(collection) is dict else 0
-	max_value = collection[max_idx]
-	for key in collection:
-		if collection[key] > collection[max_idx]:
-			max_idx = key
-			max_value = collection[key]
-
-	return (max_idx, max_value)
+from shared import find_max
 
 def date_sort(lst):
 	lst_length = len(lst)
