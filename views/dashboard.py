@@ -41,7 +41,7 @@ class Dashboard:
                         html.Div(
                             className="title",
                             children=[
-                                html.H1(children="Words Statistics"),
+                                html.H1(children="Statistics & Timelines"),
                                 html.P(children="Here we count all the hashtags that are used among the comments of post viewers:"),
                             ]
                         ),
@@ -60,12 +60,6 @@ class Dashboard:
                         ),
                         dcc.Graph(id="words-chart"),
                         html.Hr(className="separator"),
-                        html.Table(className="table-words", children=[
-                            html.Thead(
-                                html.Tr(children=[html.Th("Word"), html.Th("Iterations")]),
-                            ),
-                            html.Tbody(tbody)
-                        ]),
                         dcc.Graph(id="timeline-chart", figure={
                                 "data": [
                                     {
@@ -77,6 +71,12 @@ class Dashboard:
                                 "layout": {"title": ""},
                             },
                         ),
+                        html.Table(className="table-words", children=[
+                            html.Thead(
+                                html.Tr(children=[html.Th("Word"), html.Th("Iterations")]),
+                            ),
+                            html.Tbody(tbody)
+                        ]),
                     ]
                 )
 
@@ -130,7 +130,7 @@ class Dashboard:
                                 "type": "line",
                             },
                         ],
-                        "layout": {"title": ""},
+                        "layout": {"title": "Select a word to show its timeline:"},
                     },
 
     # now run the server

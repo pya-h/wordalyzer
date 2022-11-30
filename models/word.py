@@ -15,7 +15,7 @@ class Word:
 	def __init__(self, id, post_id, word, owner, date, likes=None, location=None):
 		self.id = id
 		self.post_id = post_id
-		self._ = word
+		self._ = word.lower()
 		self.owner = owner
 		self.date = date
 		self.likes = likes
@@ -29,7 +29,7 @@ class Word:
 		iters = dict()
 		for word in Word.S:
 			if word._[0] == mark:
-				actual_word = word._[1:]
+				actual_word = word._[1:].capitalize()
 				iters[actual_word] = iters[actual_word] + 1 if actual_word in iters else 1
 		return iters
 
@@ -56,7 +56,7 @@ class Word:
 
 
 	def __str__(self) -> str:
-		return self._
+		return self._.capitalize()
 
 
 	def sort_stats(self, statistics):
