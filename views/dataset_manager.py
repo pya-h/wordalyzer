@@ -42,7 +42,7 @@ class DatasetManager:
             if self.on_file_change:
                 port = None
                 while not port or port in self.used_ports:
-                    port = randrange(1000, 99999)
+                    port = randrange(1000, 65535)
                 self.lst_datasets.insert(tk.END, f"{short_filename} @ {self.domain}:{port}")
                 self.on_file_change(database_file.name, port, self.domain)
                 self.used_ports.append(port)
@@ -58,7 +58,7 @@ class DatasetManager:
             index = selection[0]
             if index >= 0 and index < len(self.used_ports):
                 port = self.used_ports[index]
-                webbrowser.open(f"{self.domain}:{port}", new=0, autoraise=True)
+                webbrowser.open(f"{self.domain}:{port}")
 
 if __name__ == '__main__':
     DatasetManager().show()

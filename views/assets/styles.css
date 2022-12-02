@@ -88,9 +88,9 @@
 }
 
 .word-button {
-    padding: 1rem;
     width: 200px;
     font-size: 15px;
+    padding: 5px;
     font-weight: bolder;
     border-radius: 15px;
     word-wrap: break-word;
@@ -101,4 +101,17 @@
 .word-button:hover {
     background-color: coral;
     box-shadow: 10px 0 50px black;
+}
+
+.download-button {
+    cursor: pointer;
+    border-radius: 1rem;
+    background: transparent;
+    transition: all 2s;
+    padding: 5px 10px 5px 10px;
+}
+
+.download-button:hover {
+    box-shadow: 0 0 40px lightcoral;
+    background: coral;
 }

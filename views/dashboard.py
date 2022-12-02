@@ -30,8 +30,9 @@ class Dashboard:
     def create_layout(self, x, y):
         tbody = []
         self.clicked_state = [0 for i in range(len(x))]
-        for i in range(len(x)):
-            tbody.append(html.Tr(children=[html.Td(html.Button(x[i], id=f"btn_{x[i]}", n_clicks=0, className="word-button")), html.Td(y[i])]))
+        for i in range(0, len(x), 2):
+            tbody.append(html.Tr(children=[html.Td(), html.Td(html.Button(x[i], id=f"btn_{x[i]}", n_clicks=0, className="word-button")), html.Td(y[i]),
+                                           html.Td(html.Button(x[i+1], id=f"btn_{x[i+1]}", n_clicks=0, className="word-button")), html.Td(y[i+1])]))
 
 
         return html.Div(
@@ -70,9 +71,11 @@ class Dashboard:
                                 "layout": {"title": ""},
                             },
                         ),
-                        html.Table(className="table-words", children=[
+                        html.Table(id="tableWords", className="table-words", children=[
                             html.Thead(
-                                html.Tr(children=[html.Th("Word"), html.Th("Iterations")]),
+                                html.Tr(children=[html.Th(
+                                    html.Button(id="btnSaveTable",className="download-button", children=html.I(className="fas fa-cloud-upload-alt"))
+                                ), html.Th("Word"), html.Th("Iterations"), html.Th("Word"), html.Th("Iterations"), ]),
                             ),
                             html.Tbody(tbody)
                         ]),
