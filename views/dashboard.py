@@ -133,5 +133,5 @@ class Dashboard:
                     },
 
     # now run the server
-    def run(self, port = 8000, debug=True):
+    def run(self, port = 8000, debug=False):
         self.dashboard.run_server("127.0.0.1", port, debug=debug)

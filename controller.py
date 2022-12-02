@@ -15,14 +15,14 @@ def new_dashboard(database=None, port=8000, domain="http://127.0.0.1"):
     # localhost:PORT
     def open_browser():
         webbrowser.open(f"{domain}:{port}", new=0, autoraise=True)
-        cprint("Dash server is now running... open {domain}:{port} \n \t to access your dashboard.", "red")
+        cprint(f"Dash server is now running... open {domain}:{port} \n \t to access your dashboard.", "red")
 
     Timer(1.0, open_browser).start()
     # model_manager.testme()
 
     _ = Dashboard(graph_words_title = "Words Statistics:")
-    _thread = Thread(target=_.run, args=[True, ]) # debug = false
-    _thread.run()
+    _thread = Thread(target=_.run, args=[port, False, ]) # debug = false
+    _thread.start()
 
 
 if __name__ == '__main__':
