@@ -4,7 +4,6 @@ import dash_html_components as html
 import pandas as pd
 from models.word import Word
 from dash.dependencies import Input, Output, State
-from shared import find_diffrenet
 
 class Dashboard:
     def __init__(self, graph_words_title="", graph_words_type="bar", graph_timeline_type="line") -> None:
@@ -134,5 +133,5 @@ class Dashboard:
                     },
 
     # now run the server
-    def run(self, debug=True):
-        self.dashboard.run_server(debug=debug)
+    def run(self, port = 8000, debug=True):
+        self.dashboard.run_server("127.0.0.1", port, debug=debug)
