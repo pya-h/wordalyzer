@@ -4,9 +4,12 @@ import dash_html_components as html
 import pandas as pd
 from models.word import Word
 from dash.dependencies import Input, Output, State
+from termcolor import cprint
+from shared import sort_by_y
+import os
 
 class Dashboard:
-    def __init__(self, graph_words_title="", graph_words_type="bar", graph_timeline_type="line") -> None:
+    def __init__(self, graph_words_title="", graph_words_type="bar", graph_timeline_type="line", data_name="Unknown") -> None:
 
         # preprocess data
         # init dash
@@ -14,11 +17,15 @@ class Dashboard:
 
         # design the html layout
         x, y = self.extract_dataset(0)
+        x, y = sort_by_y(x, y)  # actually dataset is mostly sorted, thius line is just to make sure that data is always sorted
 
         self.dashboard.layout = self.create_layout(x, y)
-
+        data_name = data_name.split('.')
+        data_name = ''.join(data_name[:-1])
+        self.data_name = data_name
         self.handle_limit_change_event(graph_words_title, graph_words_type)
         self.handle_timeline_word_select_event(x, y, graph_timeline_type)
+        self.handle_save_table_event()
 
     def extract_dataset(self, limit):
         self.dataset = Word.most_used(limit=int(limit))
@@ -134,6 +141,20 @@ class Dashboard:
                         ],
                         "layout": {"title": "Select a word to show its timeline:"},
                     },
+
+    def handle_save_table_event(self):
+        @self.dashboard.callback(
+            Output("btnSaveTable", "n_clicks"),
+            [Input("btnSaveTable", "n_clicks")]
+        )
+        def save_table_as_excel(click):
+            if self.dataset:
+                data_frame = pd.DataFrame(data=self.dataset, index=["Word", "Iterations"])
+                if not os.path.exists('excels'):
+                    os.makedirs('excels')
+
+                cprint(f"Successfully exported to excel as 'excels/{self.data_name}.xlsx'", "green")
+                data_frame.T.to_excel(f"excels/{self.data_name}.xlsx")
 
     # now run the server
     def run(self, port = 8000, debug=False):

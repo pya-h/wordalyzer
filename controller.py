@@ -7,7 +7,7 @@ from threading import Thread, Timer
 from termcolor import cprint
 import colorama
 
-def new_dashboard(database=None, port=8000, domain="http://127.0.0.1"):
+def new_dashboard(database=None, port=8000, domain="http://127.0.0.1", data_name="Unknown"):
 
     dataset = model_manager.db_load(database)
     model_manager.extract_words(dataset)
@@ -20,7 +20,7 @@ def new_dashboard(database=None, port=8000, domain="http://127.0.0.1"):
     Timer(1.0, open_browser).start()
     # model_manager.testme()
 
-    _ = Dashboard(graph_words_title = "Words Statistics:")
+    _ = Dashboard(graph_words_title = "Words Statistics:", data_name=data_name)
     _thread = Thread(target=_.run, args=[port, False, ]) # debug = false
     _thread.start()
 

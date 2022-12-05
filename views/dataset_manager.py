@@ -44,7 +44,7 @@ class DatasetManager:
                 while not port or port in self.used_ports:
                     port = randrange(1000, 65535)
                 self.lst_datasets.insert(tk.END, f"{short_filename} @ {self.domain}:{port}")
-                self.on_file_change(database_file.name, port, self.domain)
+                self.on_file_change(database_file.name, port, self.domain, short_filename)
                 self.used_ports.append(port)
             else:
                 self.lst_datasets.insert(tk.END, f"{short_filename} @ ???")

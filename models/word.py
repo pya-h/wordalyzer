@@ -1,4 +1,4 @@
-from shared import find_max
+from shared import find_max, sort_dict
 
 def date_sort(lst):
 	lst_length = len(lst)
@@ -31,7 +31,7 @@ class Word:
 			if word._[0] == mark:
 				actual_word = word._[1:].capitalize()
 				iters[actual_word] = iters[actual_word] + 1 if actual_word in iters else 1
-		return iters
+		return sort_dict(iters)
 
 
 	@staticmethod
@@ -57,10 +57,6 @@ class Word:
 
 	def __str__(self) -> str:
 		return self._.capitalize()
-
-
-	def sort_stats(self, statistics):
-		return sorted(statistics.items(), key = lambda kv: (kv[1], kv[0]))
 
 	@staticmethod
 	def timeline(word, mark = '#'):
