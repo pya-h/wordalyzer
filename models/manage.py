@@ -1,11 +1,11 @@
 import pandas as pd
 import sqlite3
-from .word import Word
+from .word import Word, Comment
 import re
 
 
-(DEFAULT_DATABASE_FILENAME, TABLE_COMMENTS, TABLE_POSTS, COL_TEXT, COL_ID, COL_POST_ID, COL_OWNER, COL_DATE, COL_LIKES, COL_LOCATION ) \
-    = ('models/database.db', 'comments', 'posts', 'text', 'id', 'post_id', 'owner', 'date', 'likes', 'location',)
+(DEFAULT_DATABASE_FILENAME, TABLE_COMMENTS, TABLE_POSTS, COL_TEXT, COL_ID, COL_POST_ID, COL_OWNER, COL_DATE, COL_LIKES, COL_LOCATION, COL_SCORE ) \
+    = ('models/database.db', 'comments', 'posts', 'text', 'id', 'post_id', 'owner', 'date', 'likes', 'location', 'score')
 
 def load_excel(filename='models/avocado.csv'):
     data = pd.read_csv(filename)
@@ -34,7 +34,6 @@ def db_load(database=DEFAULT_DATABASE_FILENAME, table_name = TABLE_COMMENTS, que
     connection = sqlite3.connect(database)
     connection.row_factory = dict_factory
     cursor = connection.cursor()
-
     return list(cursor.execute(f"SELECT * FROM {table_name}"))
 
 
@@ -47,7 +46,8 @@ def extract_words(database):
         owner  = row[COL_OWNER]
         date = row[COL_DATE]
         likes = row[COL_LIKES]
-        location = row[COL_LOCATION]
+        score = row[COL_SCORE]
+        Comment(text, post_id, owner, likes, score, date)
         # split words, delimiter: any non alphabetic character except #
         words = re.split("[^a-zA-Z#]", text)
         # remove reduncdants:
@@ -55,7 +55,7 @@ def extract_words(database):
 
         #filter signs
         for word in words:
-            Word(id, post_id, word, owner, date, likes, location)
+            Word(id, post_id, word, owner, date, likes, score)
         # Word.S will be automatically loaded with words
 
 

@@ -2,8 +2,8 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import pandas as pd
-from models.word import Word
-from dash.dependencies import Input, Output, State
+from models.word import Word, Comment
+from dash.dependencies import Input, Output
 from termcolor import cprint
 from shared import sort_by_y
 import os
@@ -67,6 +67,7 @@ class Dashboard:
                         ),
                         dcc.Graph(id="words-chart"),
                         html.Hr(className="separator"),
+                        html.H1(className="score-average", children=f"Score average is {Comment.average()}"),
                         dcc.Graph(id="timeline-chart", figure={
                                 "data": [
                                     {

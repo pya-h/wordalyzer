@@ -40,3 +40,14 @@ def sort_by_y(x, y):
 
 def sort_dict(statistics):
 	return dict(sorted(statistics.items(), key = lambda kv: (kv[1], kv[0]), reverse=True) )
+
+
+def date_sort(lst):
+	lst_length = len(lst)
+	for i in range(lst_length):
+		for j in range(i + 1, lst_length):
+			if lst[j].date < lst[i].date:
+				temp = lst[j]
+				lst[j] = lst[i]
+				lst[i] = temp
+	return lst

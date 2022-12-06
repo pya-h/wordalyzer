@@ -115,3 +115,11 @@
     box-shadow: 0 0 40px lightcoral;
     background: coral;
 }
+
+.score-average {
+    color: darkgreen;
+    margin: auto;
+    text-align: center;
+    width: 100%;
+    margin-bottom: 1rem;
+}
