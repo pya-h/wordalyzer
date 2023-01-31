@@ -7,6 +7,7 @@ from threading import Thread, Timer
 from termcolor import cprint
 import colorama
 
+
 def new_dashboard(database=None, port=8000, domain="http://127.0.0.1", data_name="Unknown"):
 
     dataset = model_manager.db_load(database)

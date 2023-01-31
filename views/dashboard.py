@@ -1,6 +1,6 @@
 import dash
-import dash_core_components as dcc
-import dash_html_components as html
+from dash import dcc
+from dash import html
 import pandas as pd
 from models.word import Word, Comment
 from dash.dependencies import Input, Output
@@ -8,140 +8,158 @@ from termcolor import cprint
 from shared import sort_by_y
 import os
 
+
 class Dashboard:
-    def __init__(self, graph_words_title="", graph_words_type="bar", graph_timeline_type="line", data_name="Unknown") -> None:
+    def __init__(self, graph_words_title="", graph_words_type="bar", graph_timeline_type="line",
+                 data_name="Unknown") -> None:
 
         # preprocess data
         # init dash
         self.dashboard = dash.Dash(__name__)
-
+        self.dataset = None
         # design the html layout
+        self.marker = '#'
         x, y = self.extract_dataset(0)
-        x, y = sort_by_y(x, y)  # actually dataset is mostly sorted, thius line is just to make sure that data is always sorted
-
-        self.dashboard.layout = self.create_layout(x, y)
+        self.x, self.y = sort_by_y(x, y)  # actually dataset is mostly sorted, this line is just to make sure that
+        # data is
+        # always sorted
+        self.dashboard.layout = self.create_layout()
         data_name = data_name.split('.')
         data_name = ''.join(data_name[:-1])
         self.data_name = data_name
-        self.handle_limit_change_event(graph_words_title, graph_words_type)
-        self.handle_timeline_word_select_event(x, y, graph_timeline_type)
+        self.handle_preference_change_event(graph_words_title, graph_words_type)
+        self.handle_marker_change_event(graph_words_title, graph_words_type)
+
+        self.handle_timeline_word_select_event(graph_timeline_type)
         self.handle_save_table_event()
 
-    def extract_dataset(self, limit):
-        self.dataset = Word.most_used(limit=int(limit))
+    def extract_dataset(self, limit, marker='#'):
+        self.dataset = Word.most_used(limit=int(limit), marker=marker)
         if type(self.dataset) is dict:
-            return (list(self.dataset.keys()), list(self.dataset.values()))
+            return list(self.dataset.keys()), list(self.dataset.values())
         return self.dataset
 
-
-    def create_layout(self, x, y):
-        tbody = []
-        self.clicked_state = [0 for i in range(len(x))]
-        for i in range(0, len(x), 2):
-            tbody.append(html.Tr(children=[html.Td(), html.Td(html.Button(x[i], id=f"btn_{x[i]}", n_clicks=0, className="word-button")), html.Td(y[i]),
-                                           html.Td(html.Button(x[i+1], id=f"btn_{x[i+1]}", n_clicks=0, className="word-button")), html.Td(y[i+1])]))
-
-
+    def create_layout(self):
         return html.Div(
-                    className="container",
+            className="container",
+            children=[
+                html.Div(
+                    className="title",
                     children=[
-                        html.Div(
-                            className="title",
-                            children=[
-                                html.H1(children="Statistics & Timelines"),
-                                html.P(children="Here we count all the hashtags that are used among the comments of post viewers:"),
-                            ]
-                        ),
-                        html.Hr(className="separator"),
-                        html.Div(
-                            children=[
-                                html.Div(children="Limit", className="limit-drop-down"),
-                                dcc.Dropdown(
-                                    id="limit-filter",
-                                    options=[5, 10, 15, 20, 25, 30, 35, 40, 45, 50],
-                                    value="10",
-                                    clearable=False,
-                                    className="limit-drop-down"
-                                ),
-                            ]
-                        ),
-                        dcc.Graph(id="words-chart"),
-                        html.Hr(className="separator"),
-                        html.H1(className="score-average", children=f"Score average is {Comment.average()}"),
-                        dcc.Graph(id="timeline-chart", figure={
-                                "data": [
-                                    {
-                                        "x": [],
-                                        "y": [],
-                                        "type": "line",
-                                    },
-                                ],
-                                "layout": {"title": ""},
-                            },
-                        ),
-                        html.Table(id="tableWords", className="table-words", children=[
-                            html.Thead(
-                                html.Tr(children=[html.Th(
-                                    html.Button(id="btnSaveTable",className="download-button", children=html.I(className="fas fa-cloud-upload-alt"))
-                                ), html.Th("Word"), html.Th("Iterations"), html.Th("Word"), html.Th("Iterations"), ]),
-                            ),
-                            html.Tbody(tbody)
-                        ]),
+                        html.H1(children="Statistics & Timelines"),
+                        html.P(
+                            children="Here we count all the hashtags that are used among the comments of post viewers:"),
                     ]
-                )
+                ),
+                html.Hr(className="separator"),
+                html.Div(
+                    children=[
+                        html.Div(children="Limit", className="preference-drop-down"),
+                        dcc.Dropdown(
+                            id="limit-filter",
+                            options=[5, 10, 15, 20, 25, 30, 35, 40, 45, 50],
+                            value="10",
+                            clearable=False,
+                            className="preference-drop-down"
+                        ),
+                        html.Div(children="Marker Character", className="preference-drop-down"),
+                        dcc.Dropdown(
+                            id="marker-char",
+                            options=['None', '#', '$', '!', '@', '%', '^', '&', '*', '(', '_', '-', '~', '.'],
+                            value="#",
+                            clearable=False,
+                            className="preference-drop-down"
+                        ),
+                    ]
+                ),
+                dcc.Graph(id="words-chart"),
+                html.Hr(className="separator"),
+                html.H1(className="score-average", children=f"Score average is {Comment.average()}"),
+                dcc.Graph(id="timeline-chart", figure={
+                    "data": [
+                        {
+                            "x": [],
+                            "y": [],
+                            "type": "line",
+                        },
+                    ],
+                    "layout": {"title": ""},
+                },
+                          ),
+                html.Table(id="tableWords", className="table-words", children=[
+                    html.Thead(
+                        html.Tr(children=[html.Th(
+                            html.Button(id="btnSaveTable", className="download-button",
+                                        children=html.I(className="fas fa-cloud-upload-alt"))
+                        ), html.Th("Word"), html.Th("Iterations"), html.Th("Word"), html.Th("Iterations"), ]),
+                    ),
+                    html.Tbody(id="tableWordsBody", children=self.update_table_words())
+                ]),
+            ]
+        )
 
-    def handle_limit_change_event(self, graph_words_title, graph_words_type):
+    def handle_preference_change_event(self, graph_words_title, graph_words_type):
         @self.dashboard.callback(
             [Output("words-chart", "figure")],
-            [Input("limit-filter", "value")]
+            [Input("limit-filter", "value"), Input("marker-char", "value")],
         )
-        def update_chart(limit):
-            x, y = self.extract_dataset(limit)
-            return {
-                "data": [
-                    {
-                        "x": x,
-                        "y": y,
-                        "type": graph_words_type,
-                    },
-                ],
-                "layout": {"title": graph_words_title},
-            },
+        def update_chart_by_new_prefs(limit, marker):
+            self.marker = marker if marker and marker.lower() != 'none' else None
+            self.x, self.y = self.extract_dataset(limit, marker)
 
-    def handle_timeline_word_select_event(self, x, y, graph_timeline_type):
+            return {
+                       "data": [
+                           {
+                               "x": self.x,
+                               "y": self.y,
+                               "type": graph_words_type,
+                           },
+                       ],
+                       "layout": {"title": graph_words_title},
+                   },
+
+    def handle_marker_change_event(self, graph_words_title, graph_words_type):
+        @self.dashboard.callback(
+            [Output("tableWordsBody", "children")],
+            [Input("marker-char", "value")],
+        )
+        def update_table_words_by_marker_change(marker):
+            return [self.update_table_words()]
+
+    def handle_timeline_word_select_event(self, graph_timeline_type):
         @self.dashboard.callback(
             [Output("timeline-chart", "figure")],
-            [Input(f"btn_{x[i]}", "n_clicks") for i in range(len(x))],
+            [Input(f"btn_{self.x[i]}", "n_clicks") for i in range(len(self.x))],
 
         )
         def change_word_timeline(*clicks):
             for i, click in enumerate(clicks):
                 if click and self.clicked_state[i] != clicks[i]:
                     self.clicked_state[i] = clicks[i]
-                    dataset = Word.timeline(x[i])
+                    dataset = Word.timeline(self.x[i], self.marker)
 
                     return {
-                        "data": [
-                            {
-                                "x": list(dataset.keys()),
-                                "y": list(dataset.values()),
-                                "type": graph_timeline_type,
+                               "data": [
+                                   {
+                                       "x": list(dataset.keys()),
+                                       "y": list(dataset.values()),
+                                       "type": graph_timeline_type,
 
-                            }
-                        ],
-                        "layout": {"title": f"{x[i]}'s timeline"}
-                    },
+                                   }
+                               ],
+                               "layout": {"title": f"{self.x[i]}'s timeline"}
+                           },
 
             return {
-                        "data": [
-                            {
-                                "x": [],
-                                "y": [],
-                                "type": "line",
-                            },
-                        ],
-                        "layout": {"title": "Select a word to show its timeline:"},
-                    },
+                       "data": [
+                           {
+                               "x": [],
+                               "y": [],
+                               "type": "line",
+                           },
+                       ],
+                       "layout": {"title": "Select a word to show its timeline:"},
+                   },
 
     def handle_save_table_event(self):
         @self.dashboard.callback(
@@ -158,5 +176,22 @@ class Dashboard:
                 data_frame.T.to_excel(f"excels/{self.data_name}.xlsx")
 
     # now run the server
-    def run(self, port = 8000, debug=False):
+    def run(self, port=8000, debug=False):
         self.dashboard.run_server("127.0.0.1", port, debug=debug)
+
+    def update_table_words(self):
+        tbody = []
+        self.clicked_state = [0 for i in range(len(self.x))]
+        for i in range(0, len(self.x), 2):
+            tbody.append(
+                html.Tr(children=[
+                    html.Td(), html.Td(html.Button(self.x[i], id=f"btn_{self.x[i]}",
+                                                   n_clicks=0, className="word-button")),
+                    html.Td(self.y[i]),
+                    html.Td(html.Button(self.x[i + 1],
+                                        id=f"btn_{self.x[i + 1]}", n_clicks=0,
+                                        className="word-button")),
+                    html.Td(self.y[i + 1])
+                ]
+                ))
+        return tbody
