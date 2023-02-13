@@ -37,22 +37,21 @@ class Word:
 	@staticmethod
 	def iterations(marker='#', date=None, owner=None, post_id=None):
 		# write additional code for filtering conditions
-		# if you want to analyse all the words => mark=''
+		# if you want to analyse all the words => mark='')
 		iters = dict()
 		for word in Word.S:
 			if not marker or marker.lower() == 'none':
-				actual_word = word._.capitalize()
+				actual_word = word._
 				iters[actual_word] = iters[actual_word] + 1 if actual_word in iters else 1
 
 			elif word._[0] == marker:
-				actual_word = word._[1:].capitalize()
+				actual_word = word._[1:]
 				iters[actual_word] = iters[actual_word] + 1 if actual_word in iters else 1
 
 		return sort_dict(iters)
 
 	@staticmethod
 	def most_used(limit=None, marker='#'):
-		print(f"limit is {limit} and marker is {marker}")
 		word_stats = Word.iterations(marker)
 		if not limit or limit <= 0:
 			return word_stats
@@ -72,7 +71,7 @@ class Word:
 		return words, list(map(lambda word: word_stats[word], words))
 
 	def __str__(self) -> str:
-		return self._.capitalize()
+		return self._
 
 	@staticmethod
 	def timeline(word, marker='#'):

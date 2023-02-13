@@ -50,8 +50,9 @@ def extract_words(database):
         score = row[COL_SCORE]
         Comment(text, post_id, owner, likes, score, date)
         # split words, delimiter: any non alphabetic character except #
-        words = re.split("[^a-zA-Z#]", text)
+        words = re.split("[\\s+,.;:'\"/!]", text)
         # remove redundant:
+        print(words)
         words = filter(lambda s: s, words)
 
         # filter signs
