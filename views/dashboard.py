@@ -7,6 +7,7 @@ from dash.dependencies import Input, Output
 from termcolor import cprint
 from shared import sort_by_y
 import os
+from threading import Timer
 
 
 class Dashboard:
@@ -19,18 +20,20 @@ class Dashboard:
         self.dataset = None
         # design the html layout
         self.marker = '#'
-        x, y = self.extract_dataset(0)
-        self.x, self.y = sort_by_y(x, y)  # actually dataset is mostly sorted, this line is just to make sure that
+        self.tx, self.ty = self.extract_dataset(0)
+        self.x, self.y = sort_by_y(self.tx, self.ty)  # actually dataset is mostly sorted, this line is just to make sure that
         # data is
         # always sorted
+        self.graph_words_title = graph_words_title
+        self.graph_words_type = graph_words_type
+        self.graph_timeline_type = graph_timeline_type
         self.dashboard.layout = self.create_layout()
         data_name = data_name.split('.')
         data_name = ''.join(data_name[:-1])
         self.data_name = data_name
-        self.handle_preference_change_event(graph_words_title, graph_words_type)
-        self.handle_marker_change_event(graph_words_title, graph_words_type)
-
-        self.handle_timeline_word_select_event(graph_timeline_type)
+        self.handle_preference_change_event()
+        self.handle_marker_change_event()
+        #self.handle_timeline_word_select_event()
         self.handle_save_table_event()
 
     def extract_dataset(self, limit, marker='#'):
@@ -80,7 +83,7 @@ class Dashboard:
                         {
                             "x": [],
                             "y": [],
-                            "type": "line",
+                            "type": self.graph_timeline_type,
                         },
                     ],
                     "layout": {"title": ""},
@@ -93,12 +96,12 @@ class Dashboard:
                                         children=html.I(className="fas fa-cloud-upload-alt"))
                         ), html.Th("Word"), html.Th("Iterations"), html.Th("Word"), html.Th("Iterations"), ]),
                     ),
-                    html.Tbody(id="tableWordsBody", children=self.update_table_words())
+                    html.Tbody(id="tableWordsBody")
                 ]),
             ]
         )
 
-    def handle_preference_change_event(self, graph_words_title, graph_words_type):
+    def handle_preference_change_event(self):
         @self.dashboard.callback(
             [Output("words-chart", "figure")],
             [Input("limit-filter", "value"), Input("marker-char", "value")],
@@ -106,19 +109,20 @@ class Dashboard:
         def update_chart_by_new_prefs(limit, marker):
             self.marker = marker if marker and marker.lower() != 'none' else None
             self.x, self.y = self.extract_dataset(limit, marker)
+            # Timer(3.0, self.handle_timeline_word_select_event).start()
 
             return {
                        "data": [
                            {
                                "x": self.x,
                                "y": self.y,
-                               "type": graph_words_type,
+                               "type": self.graph_words_type,
                            },
                        ],
-                       "layout": {"title": graph_words_title},
+                       "layout": {"title": self.graph_words_title},
                    },
 
-    def handle_marker_change_event(self, graph_words_title, graph_words_type):
+    def handle_marker_change_event(self):
         @self.dashboard.callback(
             [Output("tableWordsBody", "children")],
             [Input("marker-char", "value")],
@@ -126,28 +130,30 @@ class Dashboard:
         def update_table_words_by_marker_change(marker):
             return [self.update_table_words()]
 
-    def handle_timeline_word_select_event(self, graph_timeline_type):
+    def handle_timeline_word_select_event(self):
+        print("called click handler")
         @self.dashboard.callback(
             [Output("timeline-chart", "figure")],
-            [Input(f"btn_{self.x[i]}", "n_clicks") for i in range(len(self.x))],
+            [Input(f"btn_word_{i}", "n_clicks") for i in range(len(self.tx))],
 
         )
         def change_word_timeline(*clicks):
+            print(f"word {self.tx[i]} clicked!")
             for i, click in enumerate(clicks):
                 if click and self.clicked_state[i] != clicks[i]:
                     self.clicked_state[i] = clicks[i]
-                    dataset = Word.timeline(self.x[i], self.marker)
+                    dataset = Word.timeline(self.tx[i], self.marker)
 
                     return {
                                "data": [
                                    {
                                        "x": list(dataset.keys()),
                                        "y": list(dataset.values()),
-                                       "type": graph_timeline_type,
+                                       "type": self.graph_timeline_type,
 
                                    }
                                ],
-                               "layout": {"title": f"{self.x[i]}'s timeline"}
+                               "layout": {"title": f"{self.tx[i]}'s timeline"}
                            },
 
             return {
@@ -181,17 +187,19 @@ class Dashboard:
 
     def update_table_words(self):
         tbody = []
-        self.clicked_state = [0 for i in range(len(self.x))]
-        for i in range(0, len(self.x), 2):
+        self.tx, self.ty = self.extract_dataset(0, self.marker)
+        self.clicked_state = [0 for i in range(len(self.tx))]
+        for i in range(0, len(self.tx), 2):
             tbody.append(
                 html.Tr(children=[
-                    html.Td(), html.Td(html.Button(self.x[i], id=f"btn_{self.x[i]}",
+                    html.Td(), html.Td(html.Button(self.tx[i], id=f"btn_word_{i}",
                                                    n_clicks=0, className="word-button")),
-                    html.Td(self.y[i]),
-                    html.Td(html.Button(self.x[i + 1],
-                                        id=f"btn_{self.x[i + 1]}", n_clicks=0,
+                    html.Td(self.ty[i]),
+                    html.Td(html.Button(self.tx[i + 1],
+                                        id=f"btn_{self.tx[i + 1]}", n_clicks=0,
                                         className="word-button")),
-                    html.Td(self.y[i + 1])
+                    html.Td(self.ty[i + 1])
                 ]
                 ))
+        self.handle_timeline_word_select_event()
         return tbody
