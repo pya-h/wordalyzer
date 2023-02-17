@@ -7,7 +7,6 @@ from dash.dependencies import Input, Output
 from termcolor import cprint
 from shared import sort_by_y
 import os
-from threading import Timer
 
 
 class Dashboard:
@@ -20,10 +19,9 @@ class Dashboard:
         self.dataset = None
         # design the html layout
         self.marker = '#'
-        self.tx, self.ty = self.extract_dataset(0)
+        self.tx, self.ty = self.extract_dataset(0, '#')
         self.x, self.y = sort_by_y(self.tx, self.ty)  # actually dataset is mostly sorted, this line is just to make sure that
-        # data is
-        # always sorted
+        # data is always sorted
         self.graph_words_title = graph_words_title
         self.graph_words_type = graph_words_type
         self.graph_timeline_type = graph_timeline_type
@@ -33,10 +31,10 @@ class Dashboard:
         self.data_name = data_name
         self.handle_preference_change_event()
         self.handle_marker_change_event()
-        #self.handle_timeline_word_select_event()
+        self.handle_timeline_word_select_event()
         self.handle_save_table_event()
 
-    def extract_dataset(self, limit, marker='#'):
+    def extract_dataset(self, limit, marker=None):
         self.dataset = Word.most_used(limit=int(limit), marker=marker)
         if type(self.dataset) is dict:
             return list(self.dataset.keys()), list(self.dataset.values())
@@ -69,7 +67,7 @@ class Dashboard:
                         dcc.Dropdown(
                             id="marker-char",
                             options=['None', '#', '$', '!', '@', '%', '^', '&', '*', '(', '_', '-', '~', '.'],
-                            value="#",
+                            value='#',
                             clearable=False,
                             className="preference-drop-down"
                         ),
@@ -109,7 +107,6 @@ class Dashboard:
         def update_chart_by_new_prefs(limit, marker):
             self.marker = marker if marker and marker.lower() != 'none' else None
             self.x, self.y = self.extract_dataset(limit, marker)
-            # Timer(3.0, self.handle_timeline_word_select_event).start()
 
             return {
                        "data": [
@@ -122,6 +119,15 @@ class Dashboard:
                        "layout": {"title": self.graph_words_title},
                    },
 
+    # def update_words_click_handler(self):
+    #     @self.dashboard.callback(
+    #         Output
+    #         [Input(len(self.tx))]
+    #     )
+    #     def whatever():
+    #         if self.tx:
+    #             self.handle_timeline_word_select_event()
+            
     def handle_marker_change_event(self):
         @self.dashboard.callback(
             [Output("tableWordsBody", "children")],
@@ -131,14 +137,11 @@ class Dashboard:
             return [self.update_table_words()]
 
     def handle_timeline_word_select_event(self):
-        print("called click handler")
         @self.dashboard.callback(
             [Output("timeline-chart", "figure")],
             [Input(f"btn_word_{i}", "n_clicks") for i in range(len(self.tx))],
-
         )
         def change_word_timeline(*clicks):
-            print(f"word {self.tx[i]} clicked!")
             for i, click in enumerate(clicks):
                 if click and self.clicked_state[i] != clicks[i]:
                     self.clicked_state[i] = clicks[i]
@@ -188,6 +191,7 @@ class Dashboard:
     def update_table_words(self):
         tbody = []
         self.tx, self.ty = self.extract_dataset(0, self.marker)
+
         self.clicked_state = [0 for i in range(len(self.tx))]
         for i in range(0, len(self.tx), 2):
             tbody.append(
@@ -196,10 +200,9 @@ class Dashboard:
                                                    n_clicks=0, className="word-button")),
                     html.Td(self.ty[i]),
                     html.Td(html.Button(self.tx[i + 1],
-                                        id=f"btn_{self.tx[i + 1]}", n_clicks=0,
+                                        id=f"btn_word_{i+1}", n_clicks=0,
                                         className="word-button")),
                     html.Td(self.ty[i + 1])
                 ]
                 ))
-        self.handle_timeline_word_select_event()
         return tbody

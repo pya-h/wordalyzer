@@ -15,11 +15,14 @@ const capture = () => {
             canvas.remove()
         })
 }
-
+const browserLockBreaker = () => {
+    return new Promise((r) => setTimeout(r, 0));
+};
 window.onload = () => {
     setTimeout(() => { // this timeout is for making sure that all html elements are loaded
         const btnSaveTable = document.getElementById('btnSaveTable')
         btnSaveTable.addEventListener('click', capture)
 
     }, 1000);
+    
 }

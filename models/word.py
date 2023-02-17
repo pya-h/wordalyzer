@@ -35,7 +35,7 @@ class Word:
 		Word.S.append(self)
 
 	@staticmethod
-	def iterations(marker='#', date=None, owner=None, post_id=None):
+	def iterations(marker=None, date=None, owner=None, post_id=None):
 		# write additional code for filtering conditions
 		# if you want to analyse all the words => mark='')
 		iters = dict()
@@ -51,7 +51,7 @@ class Word:
 		return sort_dict(iters)
 
 	@staticmethod
-	def most_used(limit=None, marker='#'):
+	def most_used(limit=None, marker=None):
 		word_stats = Word.iterations(marker)
 		if not limit or limit <= 0:
 			return word_stats
@@ -74,7 +74,7 @@ class Word:
 		return self._
 
 	@staticmethod
-	def timeline(word, marker='#'):
+	def timeline(word, marker=None):
 		# if you want to analyse all the words => mark=''
 		# find specific word's timeline
 		sames = list(filter(lambda w: w._.lower() == f'{marker if marker else ""}{word}'.lower(), Word.S))
